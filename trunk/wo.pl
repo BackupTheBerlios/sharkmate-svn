@@ -3,13 +3,9 @@
 use warnings;
 use strict;
 use WorkOrders;
-use Contacts;
 use WWW::CMS;
-use Time::Local;
-use POSIX qw( strftime );
 
 my $wo = WorkOrders->new();
-my $contact = Contacts->new();
 my $q = $wo->{common}->{query};
 my $vars = $wo->{common}->{vars};
 my $me = $q->url();
