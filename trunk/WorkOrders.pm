@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# Yes that's right, a shebang on a module.
+
 package WorkOrders;
 
 use warnings;
