@@ -19,6 +19,7 @@ my %conf = (
 	dbuser	=>	'user',
 	dbpass	=>	'pass',
 );
+############################
 
 sub new {
 	my $class = shift;
