@@ -1,0 +1,16 @@
+CREATE TABLE www_auth (
+  seq int(20) NOT NULL auto_increment,
+  ip varchar(15) NOT NULL default '',
+  intime varchar(14) NOT NULL default '',
+  expires int(4) NOT NULL default '0',
+  uid int(20) NOT NULL default '0',
+  PRIMARY KEY  (seq)
+);
+
+CREATE TABLE www_users (
+  seq int(20) NOT NULL auto_increment,
+  un varchar(8) NOT NULL default '',
+  pw varchar(32) NOT NULL default '',
+  priv int(2) NOT NULL default '0',
+  PRIMARY KEY  (seq)
+);
