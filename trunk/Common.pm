@@ -27,10 +27,16 @@ sub new {
 	bless $self, $class;
 	$self->{query} = new CGI or return;
 	$self->{dbh} = DBI->connect( "$conf{dbi}:$conf{dbd}:$conf{db};host=$conf{dbhost};port=$conf{dbport}", $conf{dbuser}, $conf{dbpass} ) or return;
+
 	foreach my $key ( $self->{query}->param ) {
 		$self->{vars}->{$key} = $self->{query}->param( $key );
 	}
-	$self->{heap} = { };
+
+	$self->{conf} = {
+		TemplateBase	=>	'webmodules',
+		Module		=>	'sharkmate.xml',
+	};
+
 	return $self;
 }
 
