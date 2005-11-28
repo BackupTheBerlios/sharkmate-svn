@@ -5,6 +5,9 @@ package WorkOrders;
 use warnings;
 use strict;
 use Common;
+use Contacts;
+
+my $contact = Contacts->new;
 
 sub new {
 	my $class = shift;
@@ -216,7 +219,7 @@ sub get_all_open_inv {
 }
 
 sub find_wo {
-	my ( $q, $vars, $contact, $wo ) = @_;
+	my ( $q, $vars, $wo ) = @_;
 	my @out;
 
 	push ( @out, $q->h3( 'Search Work Orders' ) );
@@ -227,7 +230,7 @@ sub find_wo {
 }
 
 sub edit_wo {
-	my ( $q, $vars, $contact, $wo ) = @_;
+	my ( $q, $vars, $wo ) = @_;
 	my @out;
 
 	if ( !$vars->{won} ) {
@@ -391,7 +394,7 @@ sub edit_wo {
 }
 
 sub create_wo {
-	my ( $q, $vars, $contact, $wo ) = @_;
+	my ( $q, $vars, $wo ) = @_;
 	my @out;
 
 	push ( @out, $q->h3( 'Create Work Order' ) );
@@ -552,7 +555,7 @@ sub create_wo {
 }
 
 sub store_wo {
-	my ( $q, $vars, $contact, $wo ) = @_;
+	my ( $q, $vars, $wo ) = @_;
 	my @out;
 
 	if ( $vars->{emp1} && $vars->{desc1} && $vars->{hours1} && $vars->{phase1} ) {
@@ -583,7 +586,7 @@ sub store_wo {
 }
 
 sub invoice_wo {
-	my ( $q, $vars, $contact, $wo ) = @_;
+	my ( $q, $vars, $wo ) = @_;
 	my @out;
 
 	return $q->h3({ -style => 'color:red' }, 'No work order specified!' ) unless $vars->{won};
@@ -634,7 +637,7 @@ sub invoice_wo {
 }
 
 sub show_open_wo {
-	my ( $q, $vars, $contact, $wo ) = @_;
+	my ( $q, $vars, $wo ) = @_;
 	my @out;
 
 	push ( @out, $q->h3( 'All Open Work Orders' ) );

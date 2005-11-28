@@ -16,8 +16,8 @@ my %conf = (
 	dbhost	=>	'localhost',
 	dbport	=>	3306,
 	db	=>	'sharkmate',
-	dbuser	=>	'user',
-	dbpass	=>	'pass',
+	dbuser	=>	'sharkmate',
+	dbpass	=>	'sharkmatepw',
 );
 ############################
 
