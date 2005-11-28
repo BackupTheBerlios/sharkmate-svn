@@ -18,14 +18,14 @@ sub new {
 		return;
 	};
 
-	$self->{dispatch} = (
+	$self->{dispatch} = {
 		'00000000'	=>	\&WorkOrders::show_open_wo,
 		'00010000'	=>	\&WorkOrders::find_wo,
 		'00100010'	=>	\&WorkOrders::edit_wo,
 		'00100000'	=>	\&WorkOrders::create_wo,
 		'00100001'	=>	\&WorkOrders::store_wo,
 		'00100011'	=>	\&WorkOrders::invoice_wo,
-	);
+	};
 
 	return $self;
 }
@@ -219,7 +219,7 @@ sub get_all_open_inv {
 }
 
 sub find_wo {
-	my ( $q, $vars, $wo ) = @_;
+	my ( $q, $vars ) = @_;
 	my @out;
 
 	push ( @out, $q->h3( 'Search Work Orders' ) );
@@ -230,7 +230,7 @@ sub find_wo {
 }
 
 sub edit_wo {
-	my ( $q, $vars, $wo ) = @_;
+	my ( $q, $vars ) = @_;
 	my @out;
 
 	if ( !$vars->{won} ) {
@@ -239,7 +239,7 @@ sub edit_wo {
 	}
 
 	# Fetch workorder's current info
-	my $cwo = $wo->lookup_wo_by_seq( $vars->{won} ) || do {
+	my $cwo = lookup_wo_by_seq( $vars->{won} ) || do {
 		push ( @out, $q->h2('Failed to lookup workorder') );
 		return @out;
 	};
@@ -260,7 +260,7 @@ sub edit_wo {
 			if ( $vars->{"liseq" . $i} ) {
 				# Line item is an edit, not an add
 				$entity{liseq} = $vars->{"liseq" . $i};
-				if ( $wo->change_li( \%entity ) ) {
+				if ( change_li( \%entity ) ) {
 					push ( @out, 'Changed line item: ' . $i . $q->br );
 				}
 				else {
@@ -269,7 +269,7 @@ sub edit_wo {
 			}
 			else {
 				# Cool, add a new line item to workorder
-				if ( $wo->add_li_to_wo( \%entity ) ) {
+				if ( add_li_to_wo( \%entity ) ) {
 					push ( @out, 'Added line item: ' . $i . $q->br );
 				}
 				else {
@@ -283,13 +283,13 @@ sub edit_wo {
 	my $company = $contact->lookup_company_by_seq( $cwo->{company} );
 
 	# Get all line items currently associated with workorder
-	my $li = $wo->get_li_by_wo_seq( $vars->{won} );
+	my $li = get_li_by_wo_seq( $vars->{won} );
 
 	# Get hashref of all employees
-	my $employees = $wo->get_all_employees();
+	my $employees = get_all_employees();
 
 	# Fetch hashref of all phases
-	my $phases = $wo->get_all_phases();
+	my $phases = get_all_phases();
 
 	$employees->{0} = '-------------------';
 	$phases->{0} = '---------';
@@ -394,7 +394,7 @@ sub edit_wo {
 }
 
 sub create_wo {
-	my ( $q, $vars, $wo ) = @_;
+	my ( $q, $vars ) = @_;
 	my @out;
 
 	push ( @out, $q->h3( 'Create Work Order' ) );
@@ -403,7 +403,7 @@ sub create_wo {
 	if ( $vars->{won} && $vars->{company} ) {
 		if ( my $company = $contact->lookup_company_by_seq( $vars->{company} ) ) {
 
-			if ( $wo->lookup_wo_by_seq( $vars->{won} ) ) {
+			if ( lookup_wo_by_seq( $vars->{won} ) ) {
 				# FIXME!
 				push ( @out, $q->h4( 'WO already exists!' ) );
 			}
@@ -412,9 +412,9 @@ sub create_wo {
 					'company' => $vars->{company},
 					'won' => $vars->{won},
 				);
-				my $seq = $wo->add_wo( \%entity ); 
-				my $employees = $wo->get_all_employees();
-				my $phases = $wo->get_all_phases();
+				my $seq = add_wo( \%entity ); 
+				my $employees = get_all_employees();
+				my $phases = get_all_phases();
 				$employees->{0} = '-------------------';
 				$phases->{0} = '---------';
 				push ( @out, $q->start_div({ -class => 'block' }) );
@@ -516,7 +516,7 @@ sub create_wo {
 		}
 	}
 	else {
-		my $companies = $wo->get_all_companies();
+		my $companies = get_all_companies();
 		push ( @out, $q->start_form );
 		push ( @out, $q->hidden(
 			-name		=>	'act',
@@ -555,7 +555,7 @@ sub create_wo {
 }
 
 sub store_wo {
-	my ( $q, $vars, $wo ) = @_;
+	my ( $q, $vars ) = @_;
 	my @out;
 
 	if ( $vars->{emp1} && $vars->{desc1} && $vars->{hours1} && $vars->{phase1} ) {
@@ -569,7 +569,7 @@ sub store_wo {
 				'hours' => $vars->{"hours$i"},
 				'phase' => $vars->{"phase$i"},
 			);
-			if ( $wo->add_li_to_wo( \%entity ) ) {
+			if ( add_li_to_wo( \%entity ) ) {
 				push ( @out, 'Added line item: ' . $i . $q->br );
 			}
 			else {
@@ -586,14 +586,14 @@ sub store_wo {
 }
 
 sub invoice_wo {
-	my ( $q, $vars, $wo ) = @_;
+	my ( $q, $vars ) = @_;
 	my @out;
 
 	return $q->h3({ -style => 'color:red' }, 'No work order specified!' ) unless $vars->{won};
 
 	if ( !$vars->{wotoinv} || $vars->{wotoinv} == 0 ) {
 		# Stage 1, prompt for invoice num
-		if ( my $ticket = $wo->lookup_wo_by_seq( $vars->{won} ) ) {
+		if ( my $ticket = lookup_wo_by_seq( $vars->{won} ) ) {
 			# Cool, WO exists
 			if ( $ticket->{invoice} && $ticket->{invoice} != 0 ) {
 				# Doh! Already invoiced!
@@ -601,7 +601,7 @@ sub invoice_wo {
 			}
 			else {
 				# Should be cool to attach to invoice
-				my $invoices = $wo->get_all_open_inv;
+				my $invoices = get_all_open_inv;
 				push ( @out, $q->start_form );
 				push ( @out, $q->hidden(
 					-name		=> 'won',
@@ -637,13 +637,13 @@ sub invoice_wo {
 }
 
 sub show_open_wo {
-	my ( $q, $vars, $wo ) = @_;
+	my ( $q, $vars ) = @_;
 	my @out;
 
 	push ( @out, $q->h3( 'All Open Work Orders' ) );
 	push ( @out, $q->hr({ -class => 'mini' }) );
 	push ( @out, $q->br );
-	my $open = $wo->get_all_open_wo();
+	my $open = get_all_open_wo();
 	my $tc = 0;
 	my $out_hours;
 	my $out_cost;
@@ -672,7 +672,7 @@ sub show_open_wo {
 		push ( @out, $q->end_Tr );
 		my $ln = 0;
 		my ( $tot_hours, $tot_cost );
-		my $line_items = $wo->get_li_by_wo_seq( $ticket->{seq} );
+		my $line_items = get_li_by_wo_seq( $ticket->{seq} );
 		for my $li ( @{ $line_items } ) {
 			$ln++;
 			my $bgc = '#dadada';
