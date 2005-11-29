@@ -643,7 +643,7 @@ sub show_open_wo {
 	push ( @out, $q->h3( 'All Open Work Orders' ) );
 	push ( @out, $q->hr({ -class => 'mini' }) );
 	push ( @out, $q->br );
-	my $open = get_all_open_wo();
+	my $open = WorkOrders::get_all_open_wo();
 	my $tc = 0;
 	my $out_hours;
 	my $out_cost;

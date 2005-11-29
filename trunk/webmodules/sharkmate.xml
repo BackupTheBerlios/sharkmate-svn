@@ -11,7 +11,7 @@
 <meta name="description" content="ShellShark Networks - Superior IT consulting focusing primarily on Linux, MacOS X, BSD, and other Unices; as well as web application development" />
 <meta name="keywords" content="shellshark, shell, linux, macos, mac os, mac os x, mac osx, osx, BSD, freebsd, netbsd, openbsd, perl, OOP, GNU, gentoo, module, technology, research, development, engineering, network, networking, ipv6, ipv4, net, C, consulting, consultant, peoria, peoria IL, illinois, IL" />
 <title>ShellShark Networks :: %%PAGE%%</title>
-<link href="/css/main.css" rel="stylesheet" type="text/css" />
+<link href="http://www.shellshark.net/css/main.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 <!-- ***** Header ***** -->
@@ -28,29 +28,27 @@
 
  <!-- Note: All menu links except topmost one have margin-top set to compensate for IE anchor margin bug -->
  <div id="nmenu">
-  <span>Home</span>
-  <a href="http://www.shellshark.net/webapp/">Application Development</a>
-  <a href="http://www.shellshark.net/security/">Security</a>
-  <a href="http://www.shellshark.net/linux/">Linux</a>
-  <a href="http://www.shellshark.net/macosx/">Apple MacOS X&#0169;</a>
-  <a href="http://www.shellshark.net/otherunix/">Other Unix</a>
-  <a href="http://www.shellshark.net/networking/">Networking</a>
-  <a href="http://www.shellshark.net/contact/">Contact</a>
+  <a style="margin-top: 0px" href="%%MYURL%%">Home</a>
+  <hr class="mini" />
+  <a href="%%MYURL%%?act=0000">Contacts</a>
+  <a href="%%MYURL%%?act=0001">Find Contacts</a>
+  <a href="%%MYURL%%?act=0010">Add Contact</a>
+  <hr class="mini" />
+  <a href="%%MYURL%%?act=1000">Companies</a>
+  <a href="%%MYURL%%?act=1001">Find Company</a>
+  <a href="%%MYURL%%?act=1010">Add Company</a>
+  <hr class="mini" />
+  <a href="%%MYURL%%?act=00000000">Work Orders</a>
+  <a href="%%MYURL%%?act=00010000">Find WO</a>
+  <a href="%%MYURL%%?act=00100000">Log WO</a>
+  <hr class="mini" />
+  <a href="%%MYURL%%?act=00000000">Invoices</a>
+  <a href="%%MYURL%%?act=00010000">Find Invoice</a>
+  <a href="%%MYURL%%?act=00100000">Create Invoice</a>
  </div>
  <div id="miscinfo">
-  <p>Published Open Source Works:</p>
-  <p>&#8226; <a href="http://freshmeat.net/projects/zexbbs/">Zex BBS</a></p>
-  <p>&#8226; <a href="http://freshmeat.net/projects/myband/">MyBand</a></p>
-  <p>&#8226; <a href="http://freshmeat.net/projects/rqbot/">rqBot</a></p>
-  <p>&#0160;</p>
-  <p>Links:</p>
-  <p>&#8226; <a href="http://freshmeat.net/">Freshmeat</a></p>
-  <p>&#8226; <a href="http://slashdot.org/">Slashdot</a></p>
-  <p>&#8226; <a href="http://www.gentoo.org/">Gentoo Linux</a></p>
-  <p>&#0160;</p>
   <p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml11" alt="Valid XHTML 1.1!" height="31" width="88" /></a></p>
   <p><a href="http://jigsaw.w3.org/css-validator/check/referer/"><img style="border:0;width:88px;height:31px" src="http://jigsaw.w3.org/css-validator/images/vcss" alt="Valid CSS!" /></a></p>
-  <!-- <p><a href="http://www.gentoo.org/"><img src="http://www.gentoo.org/images/powered-by-gentoo.jpg" style="border:0" alt="Powered by Gentoo Linux" /></a></p> -->
   <p>&#0160;</p>
   <p>Copyright &#0169;2005 Bryce Porter</p>
   <p>&#0160;</p>
@@ -59,7 +57,7 @@
 </div>
 
 <!-- ***** Content ***** -->
-<div class="title">%%PAGE%% - %%DATETIME%%</div>
+<div class="title">%%PAGE%%</div>
  <div class="content">
   %%CONTENT%%
  </div>
