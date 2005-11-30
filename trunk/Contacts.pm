@@ -12,19 +12,19 @@ sub new {
 	bless $self, $class;
 
 	$self->{dispatch} = {
-		'0000'		=>	\&display_all_contacts,			# Moved
-		'0001'		=>	\&display_find_contacts,		# Moved
-		'0010'		=>	\&display_add_contact,			# Moved
-		'0011'		=>	\&display_edit_contact,			# Moved
-		'0100'		=>	\&display_contact_notes,		# Moved
-		'0101'		=>	\&display_delete_contact,		# Moved
-		'0110'		=>	\&display_insert_contact_note,		# Moved
-		'0111'		=>	\&display_delete_contact_note,		# Moved
-		'1000'		=>	\&display_all_companies,		# Moved
-		'00010000'	=>	\&display_delete_company,		# Moved
-		'00010001'	=>	\&display_edit_company,			# Moved
-		'1001'		=>	\&display_find_company,			# Moved
-		'1010'		=>	\&display_add_company,			# Moved
+		'0000'		=>	\&Contacts::display_all_contacts,
+		'0001'		=>	\&Contacts::display_find_contacts,
+		'0010'		=>	\&Contacts::display_add_contact,
+		'0011'		=>	\&Contacts::display_edit_contact,
+		'0100'		=>	\&Contacts::display_contact_notes,
+		'0101'		=>	\&Contacts::display_delete_contact,
+		'0110'		=>	\&Contacts::display_insert_contact_note,
+		'0111'		=>	\&Contacts::display_delete_contact_note,
+		'1000'		=>	\&Contacts::display_all_companies,
+		'00010000'	=>	\&Contacts::display_delete_company,
+		'00010001'	=>	\&Contacts::display_edit_company,
+		'1001'		=>	\&Contacts::display_find_company,
+		'1010'		=>	\&Contacts::display_add_company,
 	};
 
 	return $self;
@@ -568,7 +568,7 @@ sub get_num_notes {
 #
 
 sub display_all_contacts {
-	my ( $self, $dbh, $q ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 
 	my %prefixes = (
 		1 => 'Mr.',
@@ -639,7 +639,7 @@ sub display_all_contacts {
 }
 
 sub display_find_contacts {
-	my ( $self, $q ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 
 	my @out;
 
@@ -734,7 +734,7 @@ sub display_find_contacts {
 }
 
 sub display_add_contact {
-	my ( $self, $q, $dbh ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 
 	my @out;
 
@@ -768,7 +768,7 @@ sub display_add_contact {
 		}
 	}
 	else {
-		my $companies = $wo->get_all_companies();
+		my $companies = $self->get_all_companies();
 		my %prefixes = (
 			1 => 'Mr.',
 			2 => 'Ms.',
@@ -918,7 +918,7 @@ sub display_add_contact {
 }
 
 sub display_edit_contact {
-	my ( $self, $q, $dbh ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 
 	my @out;
 

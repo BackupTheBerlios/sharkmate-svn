@@ -13,10 +13,6 @@ sub new {
 	my $class = shift;
 	my $self = { };
 	bless $self, $class;
-	$self->{common} = new Common or do {
-		print STDERR "Failed to create Common.pm reference";
-		return;
-	};
 
 	$self->{dispatch} = {
 		'00000000'	=>	\&WorkOrders::show_open_wo,
@@ -31,13 +27,13 @@ sub new {
 }
 
 sub get_all_companies {
-	my $self = shift;
-	my $sth = $self->{common}->{dbh}->prepare( 'SELECT seq,name FROM www_companies' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my $sth = $dbh->prepare( 'SELECT seq,name FROM www_companies' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	$sth->execute() or do {
-		print STDERR "Faile to execute SQL query: " . $self->{common}->{dbh}->errstr;
+		print STDERR "Faile to execute SQL query: " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
@@ -50,13 +46,13 @@ sub get_all_companies {
 }
 
 sub get_all_employees {
-	my $self = shift;
-	my $sth = $self->{common}->{dbh}->prepare( 'SELECT seq,CONCAT(lname,", ",fname) AS name FROM www_employees' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my $sth = $dbh->prepare( 'SELECT seq,CONCAT(lname,", ",fname) AS name FROM www_employees' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	$sth->execute() or do {
-		print STDERR "Faile to execute SQL query: " . $self->{common}->{dbh}->errstr;
+		print STDERR "Faile to execute SQL query: " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
@@ -69,13 +65,13 @@ sub get_all_employees {
 }
 
 sub get_all_phases {
-	my $self = shift;
-	my $sth = $self->{common}->{dbh}->prepare( 'SELECT seq,code FROM www_phases' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my $sth = $dbh->prepare( 'SELECT seq,code FROM www_phases' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	$sth->execute() or do {
-		print STDERR "Faile to execute SQL query: " . $self->{common}->{dbh}->errstr;
+		print STDERR "Faile to execute SQL query: " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
@@ -88,13 +84,13 @@ sub get_all_phases {
 }
 
 sub lookup_wo_by_seq {
-	my ( $self, $seq ) = @_;
-	my $sth = $self->{common}->{dbh}->prepare( 'SELECT ref,company,status,invoice FROM wo_ticket WHERE seq = ? LIMIT 1' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars, $seq ) = @_;
+	my $sth = $dbh->prepare( 'SELECT ref,company,status,invoice FROM wo_ticket WHERE seq = ? LIMIT 1' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	$sth->execute( $seq ) or do {
-		print STDERR "Failed to execute SQL query: " . $self->{common}->{dbh}->errstr;
+		print STDERR "Failed to execute SQL query: " . $dbh->errstr;
 		$sth->finish;
 		return;
 	}; 
@@ -104,13 +100,13 @@ sub lookup_wo_by_seq {
 }
 
 sub get_all_open_wo {
-	my $self = shift;
-	my $sth = $self->{common}->{dbh}->prepare( 'SELECT seq,ref,ts,company,descr FROM wo_ticket WHERE status = 0 ORDER BY ref ASC' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my $sth = $dbh->prepare( 'SELECT seq,ref,ts,company,descr FROM wo_ticket WHERE status = 0 ORDER BY ref ASC' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	$sth->execute() or do {
-		print STDERR "Failed to execute SQL query: " . $self->{common}->{dbh}->errstr;
+		print STDERR "Failed to execute SQL query: " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
@@ -123,13 +119,13 @@ sub get_all_open_wo {
 }
 
 sub get_li_by_wo_seq {
-	my ( $self, $seq ) = @_;
-	my $sth = $self->{common}->{dbh}->prepare( 'SELECT wo_line_item.seq,wo_line_item.ts,CONCAT(www_employees.lname,", ",www_employees.fname) AS employee,wo_line_item.descr,wo_line_item.hours,phase AS phaseseq,www_phases.code AS phase,SUM(wo_line_item.hours * www_phases.cost) AS cost FROM wo_line_item LEFT JOIN www_employees ON wo_line_item.employee = www_employees.seq LEFT JOIN www_phases ON www_phases.seq = wo_line_item.phase WHERE wo = ? GROUP BY wo_line_item.seq' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars, $seq ) = @_;
+	my $sth = $dbh->prepare( 'SELECT wo_line_item.seq,wo_line_item.ts,CONCAT(www_employees.lname,", ",www_employees.fname) AS employee,wo_line_item.descr,wo_line_item.hours,phase AS phaseseq,www_phases.code AS phase,SUM(wo_line_item.hours * www_phases.cost) AS cost FROM wo_line_item LEFT JOIN www_employees ON wo_line_item.employee = www_employees.seq LEFT JOIN www_phases ON www_phases.seq = wo_line_item.phase WHERE wo = ? GROUP BY wo_line_item.seq' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	$sth->execute( $seq ) or do {
-		print STDERR "Failed to execute SQL query " . $self->{common}->{dbh}->errstr;
+		print STDERR "Failed to execute SQL query " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
@@ -142,23 +138,23 @@ sub get_li_by_wo_seq {
 }
 
 sub add_wo {
-	my ( $self, $entity ) = @_;
-	my $sth = $self->{common}->{dbh}->prepare( 'INSERT INTO wo_ticket VALUES( NULL,?,?,NOW()+0,?,0,0 )' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars, $entity ) = @_;
+	my $sth = $dbh->prepare( 'INSERT INTO wo_ticket VALUES( NULL,?,?,NOW()+0,?,0,0 )' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	$sth->execute( $entity->{company}, $entity->{won}, 'Added from web interface' ) or do {
-		print STDERR "Failed to execute SQL query: " . $self->{common}->{dbh}->errstr;
+		print STDERR "Failed to execute SQL query: " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
 	$sth->finish;
-	$sth = $self->{common}->{dbh}->prepare( 'SELECT seq FROM wo_ticket WHERE ref = ? LIMIT 1' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	$sth = $dbh->prepare( 'SELECT seq FROM wo_ticket WHERE ref = ? LIMIT 1' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	$sth->execute( $entity->{won} ) or do {
-		print STDERR "Failed to execute SQL query: " . $self->{common}->{dbh}->errstr;
+		print STDERR "Failed to execute SQL query: " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
@@ -169,13 +165,13 @@ sub add_wo {
 }
 
 sub add_li_to_wo {
-	my ( $self, $entity ) = @_;
-	my $sth = $self->{common}->{dbh}->prepare( 'INSERT INTO wo_line_item VALUES( NULL,?,NOW()+0,?,?,?,? )' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars, $entity ) = @_;
+	my $sth = $dbh->prepare( 'INSERT INTO wo_line_item VALUES( NULL,?,NOW()+0,?,?,?,? )' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	my $rc = $sth->execute( $entity->{won}, $entity->{employee}, $entity->{descr}, $entity->{hours}, $entity->{phase} ) or do {
-		print STDERR "Failed to execute SQL query: " . $self->{common}->{dbh}->errstr;
+		print STDERR "Failed to execute SQL query: " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
@@ -184,13 +180,13 @@ sub add_li_to_wo {
 }
 
 sub change_li {
-	my ( $self, $entity ) = @_;
-	my $sth = $self->{common}->{dbh}->prepare( 'UPDATE wo_line_item SET employee = ?, descr = ?, hours = ?, phase = ? WHERE seq = ? LIMIT 1' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars, $entity ) = @_;
+	my $sth = $dbh->prepare( 'UPDATE wo_line_item SET employee = ?, descr = ?, hours = ?, phase = ? WHERE seq = ? LIMIT 1' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	my $rc = $sth->execute( $entity->{employee}, $entity->{descr}, $entity->{hours}, $entity->{phase}, $entity->{liseq} ) or do {
-		print STDERR "Failed to execute SQL query: " . $self->{common}->{dbh}->errstr;
+		print STDERR "Failed to execute SQL query: " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
@@ -199,13 +195,13 @@ sub change_li {
 }
 
 sub get_all_open_inv {
-	my ( $self ) = @_;
-	my $sth = $self->{common}->{dbh}->prepare( 'SELECT seq,descr FROM invoices WHERE status = 0' ) or do {
-		print STDERR "Failed to prepare SQL query: " . $self->{common}->{dbh}->errstr;
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my $sth = $dbh->prepare( 'SELECT seq,descr FROM invoices WHERE status = 0' ) or do {
+		print STDERR "Failed to prepare SQL query: " . $dbh->errstr;
 		return;
 	};
 	$sth->execute or do {
-		print STDERR "Failed to execute SQL query " . $self->{common}->{dbh}->errstr;
+		print STDERR "Failed to execute SQL query " . $dbh->errstr;
 		$sth->finish;
 		return;
 	};
@@ -219,7 +215,7 @@ sub get_all_open_inv {
 }
 
 sub find_wo {
-	my ( $q, $vars ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 	my @out;
 
 	push ( @out, $q->h3( 'Search Work Orders' ) );
@@ -230,7 +226,7 @@ sub find_wo {
 }
 
 sub edit_wo {
-	my ( $q, $vars ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 	my @out;
 
 	if ( !$vars->{won} ) {
@@ -239,7 +235,7 @@ sub edit_wo {
 	}
 
 	# Fetch workorder's current info
-	my $cwo = lookup_wo_by_seq( $vars->{won} ) || do {
+	my $cwo = $self->lookup_wo_by_seq( $vars->{won} ) || do {
 		push ( @out, $q->h2('Failed to lookup workorder') );
 		return @out;
 	};
@@ -283,13 +279,13 @@ sub edit_wo {
 	my $company = $contact->lookup_company_by_seq( $cwo->{company} );
 
 	# Get all line items currently associated with workorder
-	my $li = get_li_by_wo_seq( $vars->{won} );
+	my $li = $self->get_li_by_wo_seq( $dbh, $q, $vars->{won} );
 
 	# Get hashref of all employees
-	my $employees = get_all_employees();
+	my $employees = $self->get_all_employees( $dbh, $q, $vars );
 
 	# Fetch hashref of all phases
-	my $phases = get_all_phases();
+	my $phases = $self->get_all_phases( $dbh, $q, $vars );
 
 	$employees->{0} = '-------------------';
 	$phases->{0} = '---------';
@@ -394,7 +390,7 @@ sub edit_wo {
 }
 
 sub create_wo {
-	my ( $q, $vars ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 	my @out;
 
 	push ( @out, $q->h3( 'Create Work Order' ) );
@@ -413,8 +409,8 @@ sub create_wo {
 					'won' => $vars->{won},
 				);
 				my $seq = add_wo( \%entity ); 
-				my $employees = get_all_employees();
-				my $phases = get_all_phases();
+				my $employees = $self->get_all_employees( $dbh, $q, $vars );
+				my $phases = $self->get_all_phases( $dbh, $q, $vars );
 				$employees->{0} = '-------------------';
 				$phases->{0} = '---------';
 				push ( @out, $q->start_div({ -class => 'block' }) );
@@ -516,7 +512,7 @@ sub create_wo {
 		}
 	}
 	else {
-		my $companies = get_all_companies();
+		my $companies = $self->get_all_companies( $dbh, $q, $vars );
 		push ( @out, $q->start_form );
 		push ( @out, $q->hidden(
 			-name		=>	'act',
@@ -555,7 +551,7 @@ sub create_wo {
 }
 
 sub store_wo {
-	my ( $q, $vars ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 	my @out;
 
 	if ( $vars->{emp1} && $vars->{desc1} && $vars->{hours1} && $vars->{phase1} ) {
@@ -586,7 +582,7 @@ sub store_wo {
 }
 
 sub invoice_wo {
-	my ( $q, $vars ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 	my @out;
 
 	return $q->h3({ -style => 'color:red' }, 'No work order specified!' ) unless $vars->{won};
@@ -637,13 +633,13 @@ sub invoice_wo {
 }
 
 sub show_open_wo {
-	my ( $q, $vars ) = @_;
+	my ( $self, $dbh, $q, $vars ) = @_;
 	my @out;
 
 	push ( @out, $q->h3( 'All Open Work Orders' ) );
 	push ( @out, $q->hr({ -class => 'mini' }) );
 	push ( @out, $q->br );
-	my $open = WorkOrders::get_all_open_wo();
+	my $open = $self->get_all_open_wo( $dbh, $q, $vars );
 	my $tc = 0;
 	my $out_hours;
 	my $out_cost;
@@ -672,7 +668,7 @@ sub show_open_wo {
 		push ( @out, $q->end_Tr );
 		my $ln = 0;
 		my ( $tot_hours, $tot_cost );
-		my $line_items = get_li_by_wo_seq( $ticket->{seq} );
+		my $line_items = $self->get_li_by_wo_seq( $dbh, $q, $vars, $ticket->{seq} );
 		for my $li ( @{ $line_items } ) {
 			$ln++;
 			my $bgc = '#dadada';
