@@ -18,13 +18,13 @@ sub new {
 		'0011'		=>	\&display_edit_contact,			# Moved
 		'0100'		=>	\&display_contact_notes,		# Moved
 		'0101'		=>	\&display_delete_contact,		# Moved
-		'0110'		=>	\&display_insert_contact_note,
-		'0111'		=>	\&display_delete_contact_note,
-		'1000'		=>	\&display_all_companies,
-		'00010000'	=>	\&display_delete_company,
-		'00010001'	=>	\&display_edit_company,
-		'1001'		=>	\&display_find_company,
-		'1010'		=>	\&display_add_company,
+		'0110'		=>	\&display_insert_contact_note,		# Moved
+		'0111'		=>	\&display_delete_contact_note,		# Moved
+		'1000'		=>	\&display_all_companies,		# Moved
+		'00010000'	=>	\&display_delete_company,		# Moved
+		'00010001'	=>	\&display_edit_company,			# Moved
+		'1001'		=>	\&display_find_company,			# Moved
+		'1010'		=>	\&display_add_company,			# Moved
 	};
 
 	return $self;
@@ -1264,6 +1264,535 @@ sub display_contact_notes {
 	}
 
 	return \@out;
+}
+
+sub display_insert_contact_note {
+	my ( $self, $dbh, $q, $vars ) = @_;
+
+	my @out;
+
+	push ( @out,  $q->h3( "Contact Notes" ) );
+	push ( @out,  $q->hr({ -class => 'mini' }) );
+	push ( @out,  $q->br );
+	if ( !$vars->{co} ) {
+		push ( @out, 'Danger, danger Will Robinson!' );
+	}
+	else {
+		if ( !$vars->{note} ) {
+			my %prefixes = (
+				1 => 'Mr.',
+				2 => 'Ms.',
+				3 => 'Mrs.',
+				4 => 'Dr.',
+			);
+			my $contact = $self->lookup_contact_by_seq( $vars->{co} );
+			push ( @out,  $q->start_div({ -class => 'block' }) );
+			push ( @out,  $q->start_div({ -class => 'block-title' }) );
+			push ( @out,  $contact->{companyName} );
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->start_ul({ -class => 'sleek' }) );
+			push ( @out,  $q->start_li . $prefixes{$contact->{prefix}} . ' ' . join( ", ", $contact->{lname}, $contact->{fname} ) . $q->end_li );
+			push ( @out,  $q->start_li . $contact->{url} . $q->end_li ) if $contact->{url};
+			push ( @out,  $q->br );
+			push ( @out,  $q->start_li . $contact->{address} . $q->end_li );
+			push ( @out,  $q->start_li . $contact->{suite} . $q->end_li ) if $contact->{suite};
+			push ( @out,  $q->start_li . join ( ", ", $contact->{city}, $contact->{state}, $contact->{zip} ) . $q->end_li );
+			push ( @out,  $q->br );
+			push ( @out,  $q->start_li . 'em: ' . $contact->{email} . $q->end_li );
+			push ( @out,  $q->start_li . 'ph: ' . $contact->{phone} );
+			push ( @out,  " x " . $contact->{ext} ) if $contact->{ext};
+			push ( @out,  $q->end_li );
+			push ( @out,  $q->start_li . 'ce: ' . $contact->{cell} . $q->end_li . $q->br ) if $contact->{cell};
+			push ( @out,  $q->start_li . 'fx: ' . $contact->{fax} . $q->end_li ) if $contact->{fax};
+			push ( @out,  $q->start_div({ -align => 'center' }) );
+			push ( @out,  '[ ' . $q->a({ -href => $q->url . '?act=0110;co=' . $contact->{seq} }, "add note" ) . ' ]' );
+			push ( @out,  '[ ' . $q->a({ -href => $q->url . '?act=0011;co=' . $contact->{seq} }, "edit" ) . ' ]' );
+			push ( @out,  '[ ' . $q->a({ -href => 'mailto:' . $contact->{email} }, "e-mail" ) . ' ]' );
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->br );
+
+			push ( @out,  $q->start_div({ -class => 'block' }) );			push ( @out,  $q->start_div({ -class => 'block-title' }) );
+			push ( @out,  'Note' );
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->br );
+			push ( @out,  $q->start_form );
+			push ( @out,  $q->hidden(
+				-name => 'co',
+				-default => $vars->{co},
+				-override => 1,
+			) );
+			push ( @out,  $q->hidden(
+				-name => 'act',
+				-default => '0110',
+				-override => 1,
+			) );
+			push ( @out,  $q->textarea(
+				-name => 'note',
+				-class => 'sleek',
+				-rows => 5,
+				-columns => 40,
+			) );
+			push ( @out,  $q->start_div({ -class => 'sleek-button' }) );
+			push ( @out,  $q->submit(
+				-class => 'sleek-button',
+				-value => 'Insert',
+			) );
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->end_form );
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->br );
+		}
+		else {
+			if ( $self->insert_contact_notes( $vars->{co}, $vars->{note} ) ) {
+				push ( @out,  'Successfully appended contact note!' );
+			}
+			else {
+				push ( @out,  'Error: Failed to insert note for contact: ', $self->{errstr} );
+			}
+		}
+	}
+
+	return \@out;
+}
+
+sub display_delete_contact_note {
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my @out;
+
+	if ( !$vars->{ni} ) {
+		push ( @out, 'Danger, danger Will Robinson!' );
+	}
+	else {
+		if ( $self->lookup_note_by_seq( $vars->{ni} ) ) {
+			if ( $self->delete_note_by_seq( $vars->{ni} ) ) {
+				push ( @out, 'Successfully deleted contact note ID: "' . $vars->{ni} . '"' );
+			}
+			else {
+				push ( @out, 'Failed to delete contact note ID: "' . $vars->{co} . '": ' . $self->{errstr} );
+			}
+		}
+		else {
+			push ( @out, 'Stop playin around and get to work!' );
+		}
+	}
+
+	return \@out;
+}
+
+sub display_all_companies {
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my @out;
+
+	push ( @out,  $q->h3( "View all companies" ) );
+	push ( @out,  $q->hr({ -class => 'mini'}) );
+	push ( @out,  $q->br );
+	my $companies = $self->view_all_companies;
+	my $matches = scalar( @{ $companies } );
+	push ( @out,  $q->start_div({ -align => 'center' }) );
+	if ( $matches < 1 ) {
+		push ( @out,  "Sorry, you suck too much to have any companies" );
+		push ( @out,  $q->end_div );
+	}
+	else {
+		push ( @out,  "There is $matches company on record" ) if $matches <= 1;
+		push ( @out,  "There are " . commie( $matches ) . " companies on record" ) if $matches > 1;
+		push ( @out,  $q->end_div );
+		push ( @out,  $q->br );
+		my $count;
+		foreach my $company ( @{ $companies } ) {
+			$count++;
+			push ( @out,  $q->start_div({ -class => 'block' }) );
+			push ( @out,  $q->start_div({ -class => 'block-title' }) );
+			push ( @out,  $company->{name} );
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->start_ul({ -class => 'sleek' }) );
+			push ( @out,  $q->start_li . 'url: ' . $company->{url} . $q->end_li ) if $company->{url};
+			push ( @out,  $q->br );
+			push ( @out,  $q->start_li . $company->{address} . $q->end_li );
+			push ( @out,  $q->start_li . $company->{address2} . $q->end_li ) if $company->{address2};
+			push ( @out,  $q->start_li . join ( ", ", $company->{city}, $company->{state}, $company->{zip} ) . $q->end_li );
+			push ( @out,  $q->br );
+			push ( @out,  $q->start_li . 'ph: ' . $company->{phone} );
+			push ( @out,  $q->end_li );
+			push ( @out,  $q->start_li . 'fx: ' . $company->{fax} . $q->end_li ) if $company->{fax};
+			push ( @out,  $q->start_div({ -align => 'center' }) );
+			push ( @out,  '[ ' . $q->a({ -href => $q->url . '?act=00010000;co=' . $company->{seq} }, "delete" ) . ' ]' );
+			push ( @out,  '[ ' . $q->a({ -href => $q->url . '?act=00010001;co=' . $company->{seq} }, "edit" ) . ' ]' );
+			push ( @out,  '[ ' . $q->a({ -href => $company->{url} }, "website" ) . ' ]' ) if $company->{url};
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->end_ul );
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->br );
+		}
+	}
+	push ( @out,  $q->hr({ -class => 'mini' }) );
+	push ( @out,  $q->br );
+
+	return \@out;
+}
+
+sub display_delete_company {
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my @out;
+
+	if ( !$vars->{co} ) {
+		push ( @out, 'w00f?' );
+	}
+	else {
+		if ( my $company = $self->lookup_company_by_seq( $vars->{co} ) ) {
+			if ( $self->delete_company_by_seq( $vars->{co} ) ) {
+				push ( @out, 'Successfully deleted company: "' . $company->{name} . '"' );
+			}
+			else {
+				push ( @out, 'Error: ' . $self->{errstr} );
+			}
+		}
+		else {
+			push ( @out, 'Abort, Retry, Fail?!' );
+		}
+	}
+
+	return \@out;
+}
+
+sub display_edit_company {
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my @out;
+
+	push ( @out,  $q->h3( "Edit Company" ) );
+	push ( @out,  $q->hr({ -class => 'mini' }) );
+	push ( @out,  $q->br );
+	if ( $vars->{name} && $vars->{address} && $vars->{phone} && $vars->{zip} && $self->lookup_company_by_seq( $vars->{co} ) ) {
+		my %entity = (
+			name => $vars->{name},
+			url => $vars->{url},
+			address => $vars->{address},
+			address2 => $vars->{address2},
+			zip => $vars->{zip},
+			phone => $vars->{phone},
+			fax => $vars->{fax},
+		);
+		my $ret = $self->update_company_by_seq( $vars->{co}, \%entity );
+		if ( !$ret ) {
+			push ( @out, "OH NOES! YOUR POP3 HAS BEEN IMAP'ed: " . $self->{errstr} );
+		}
+		else {
+			push ( @out, "Company successfully updated!" );
+			push ( @out, $q->br );
+		}
+	}
+	else {
+		if ( $vars->{co} && (my $current = $self->lookup_company_by_seq( $vars->{co} ) ) ) {
+			my $clist = $self->view_all_companies;
+			my %companies;
+			foreach my $company ( @{ $clist } ) {
+				$companies{$company->{seq}} = $company->{name}
+			}
+			push ( @out,  $q->start_form );
+			push ( @out,  $q->hidden({
+				-name => 'act',
+				-value => '00010001',
+				-override => 1,
+			}) );
+			push ( @out,  $q->hidden({
+				-name => 'co',
+				-value => $vars->{co},
+				-override => 1,
+			}) );
+			push ( @out,  $q->br );
+			push ( @out,  '<label class="sleek-bold" for="name">Company Name:</label>' );
+			push ( @out,  $q->textfield(
+				-name => 'name',
+				-id => 'name',
+				-class => 'sleek',
+				-maxlength => 48,
+				-default => $current->{name},
+				-value => $current->{name},
+			) );
+			push ( @out,  $q->br );
+			push ( @out,  '<label class="sleek" for="url">URL:</label>' );
+			push ( @out,  $q->textfield(
+				-name => 'url',
+				-id => 'url',
+				-class => 'sleek',
+				-maxlength => 255,
+				-value => $current->{url},
+				-default => $current->{url},
+				-override => 1,
+			) );
+			push ( @out,  $q->br );
+			push ( @out,  '<label class="sleek-bold" for="phone">Phone:</label>' );
+			push ( @out,  $q->textfield(
+				-name => 'phone',
+				-id => 'phone',
+				-class => 'sleek',
+				-maxlength => 16,
+				-value => $current->{phone},
+				-default => $current->{phone},
+				-override => 1,
+			) );
+			push ( @out,  $q->br );
+			push ( @out,  '<label class="sleek" for="fax">Fax:</label>' );
+			push ( @out,  $q->textfield(
+				-name => 'fax',
+				-id => 'fax',
+				-class => 'sleek',
+				-maxlength => 16,
+				-default => $current->{fax},
+				-value => $current->{fax},
+				-override => 1,
+			) );
+			push ( @out,  $q->br );
+			push ( @out,  '<label class="sleek-bold" for="address">Street Address:</label>' );
+			push ( @out,  $q->textfield(
+				-name => 'address',
+				-id => 'address',
+				-class => 'sleek',
+				-maxlength => 48,
+				-default => $current->{address},
+				-value => $current->{address},
+				-override => 1,
+			) );
+			push ( @out,  $q->br );
+			push ( @out,  '<label class="sleek" for="address2">Address Line 2:</label>' );
+			push ( @out,  $q->textfield(
+				-name => 'address2',
+				-id => 'address2',
+				-class => 'sleek',
+				-maxlength => 48,
+				-default => $current->{address2},
+				-value => $current->{address2},
+				-override => 1,
+			) );
+			push ( @out,  $q->br );
+			push ( @out,  '<label class="sleek-bold" for="zip">Zipcode:</label>' );
+			push ( @out,  $q->textfield(
+				-name => 'zip',
+				-id => 'zip',
+				-class => 'sleek-small',
+				-maxlength => 5,
+				-default => $current->{zip},
+				-value => $current->{zip},
+				-override => 1,
+			) );
+			push ( @out,  $q->br );
+			push ( @out,  $q->hr({ -class => 'mini' }) );
+			push ( @out,  $q->start_div({ -class => 'sleek-button' }) );
+			push ( @out,  $q->submit({
+				-class => 'sleek-button',
+				-value => 'Change!',
+				-id => 'submit',
+				-name => 'submit',
+			}) );
+			push ( @out,  $q->end_div );
+			push ( @out,  $q->end_form );
+		}
+		else {
+			push ( @out,  'Fatal error: No shizzle to go with that w00t' );
+		}
+	}
+	push ( @out,  $q->hr({ -class => 'mini' }) );
+	push ( @out,  $q->br );
+
+	return \@out;
+}
+
+sub display_find_company {
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my @out;
+
+	push ( @out,  $q->h3( "Find Company" ) );
+	push ( @out,  $q->hr({ -class => 'mini'}) );
+	push ( @out,  $q->start_form );
+	push ( @out,  $q->hidden(	-name		=> 'act',
+							-value		=> '1001',
+							-override	=> 1	) );
+	push ( @out,  $q->start_div({	-align	=> 'center' }) );
+	push ( @out,  $q->textfield(	-class	=> 'sleek-small',
+							-name	=> 'crit',
+							-value	=> ''		) );
+	push ( @out,  $q->submit(	-class	=> 'sleek-button',
+							-value	=> 'Find!'	) );
+	push ( @out,  $q->end_div );
+	push ( @out,  $q->end_form );
+	if ( $vars->{crit} ) {
+		my $companies = $self->find_company( $vars->{crit} );
+		my $matches = scalar( @{$companies} );
+		if ( $matches < 1 ) {
+			push ( @out,  $q->start_div({ -align => 'center' }) );
+			push ( @out,  "Found no matches for: '$vars->{crit}'" );
+			push ( @out,  $q->end_div );
+		}
+		else {
+			push ( @out,  $q->start_div({ -align => 'center' }) );
+			if ( $matches > 1 ) {
+				push ( @out,  "Found " . commie( $matches ) . " matches" );
+			}
+			else {
+				push ( @out,  "Found $matches match" );
+			}
+			push ( @out,  " for: '$vars->{crit}'" );
+			push ( @out,  $q->end_div );
+			my $count;
+			foreach my $company ( @{ $companies } ) {
+				$count++;
+				(my $companyName = $company->{name}) =~ s/($vars->{crit})/\<b\>\<u\>$1\<\/u\>\<\/b\>/gi;
+				(my $address = $company->{address}) =~ s/($vars->{crit})/\<b\>\<u\>$1\<\/u\>\<\/b\>/gi;
+				(my $address2 = $company->{address2}) =~ s/($vars->{crit})/\<b\>\<u\>$1\<\/u\>\<\/b\>/gi if $company->{suite};
+				(my $url = $company->{url}) =~ s/($vars->{crit})/\<b\>\<u\>$1\<\/u\>\<\/b\>/gi if $company->{url};
+				(my $city = $company->{city}) =~ s/($vars->{crit})/\<b\>\<u\>$1\<\/u\>\<\/b\>/gi;
+				(my $zip = $company->{zip}) =~ s/($vars->{crit})/\<b\>\<u\>$1\<\/u\>\<\/b\>/gi;
+				(my $phone = $company->{phone}) =~ s/($vars->{crit})/\<b\>\<u\>$1\<\/u\>\<\/b\>/gi;
+				(my $fax = $company->{fax}) =~ s/($vars->{crit})/\<b\>\<u\>$1\<\/u\>\<\/b\>/gi if $company->{fax};
+				push ( @out,  $q->start_div({ -class => 'block' }) );
+				push ( @out,  $q->start_div({ -class => 'block-title' }) );
+				push ( @out,  $companyName );
+				push ( @out,  $q->end_div );
+				push ( @out,  $q->start_ul({ -class => 'sleek' }) );
+				push ( @out,  $q->start_li . $url . $q->end_li ) if $url;
+				push ( @out,  $q->br );
+				push ( @out,  $q->start_li . $address . $q->end_li );
+				push ( @out,  $q->start_li . $address2 . $q->end_li ) if $address2;
+				push ( @out,  $q->start_li . join ( ", ", $city, $company->{state}, $zip ) . $q->end_li );
+				push ( @out,  $q->br );
+				push ( @out,  $q->start_li . 'ph: ' . $phone );
+				push ( @out,  $q->end_li );
+				push ( @out,  $q->start_li . 'fx: ' . $fax . $q->end_li ) if $fax;
+				push ( @out,  $q->start_div({ -align => 'center' }) );
+				push ( @out,  '[ ' . $q->a({ -href => $q->url . '?act=00010010;co=' . $company->{seq} }, "delete" ) . ' ]' );
+				push ( @out,  '[ ' . $q->a({ -href => $q->url . '?act=00010011;co=' . $company->{seq} }, "edit" ) . ' ]' );
+				push ( @out,  '[ ' . $q->a({ -href => $company->{url} }, "website" ) . ' ]' ) if $company->{url};
+				push ( @out,  $q->end_div );
+				push ( @out,  $q->end_div );
+				push ( @out,  $q->br );
+			}
+		}
+	}
+	push ( @out,  $q->hr({ -class => 'mini' }) );
+	push ( @out,  $q->br );
+
+	return \@out;
+}
+
+sub display_add_company {
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my @out;
+
+	push ( @out,  $q->h3( "Add Company" ) );
+	push ( @out,  $q->hr({ -class => 'mini' }) );
+	push ( @out,  $q->br );
+	if ( $vars->{name} && $vars->{zip} && $vars->{phone} && $vars->{address} ) {
+		my %entity = (
+			name => $vars->{name},
+			url => $vars->{url},
+			address => $vars->{address},
+			address2 => $vars->{address2},
+			zip => $vars->{zip},
+			phone => $vars->{phone},
+			fax => $vars->{fax},
+		);
+		my $ret = $self->insert_company( \%entity );
+		if ( !$ret ) {
+			push ( @out, "OH NOES! YOUR POP3 HAS BEEN IMAP'ed: " . $self->{errstr} );
+		}
+		else {
+			push ( @out, "Company successfully added!" );
+			push ( @out, $q->br );
+		}
+	}
+	else {
+		push ( @out,  $q->start_form );
+		push ( @out,  $q->hidden({
+			-name => 'act',
+			-value => '1010',
+			-override => 1,
+		}) );
+		push ( @out,  $q->br );
+		push ( @out,  '<label class="sleek-bold" for="name">Company Name:</label>' );
+		push ( @out,  $q->textfield(
+			-name => 'name',
+			-id => 'name',
+			-class => 'sleek',
+			-maxlength => 16,
+		) );
+		push ( @out,  $q->br );
+		push ( @out,  '<label class="sleek" for="url">URL:</label>' );
+		push ( @out,  $q->textfield(
+			-name => 'url',
+			-id => 'url',
+			-class => 'sleek',
+			-maxlength => 255,
+		) );
+		push ( @out,  $q->br );
+		push ( @out,  '<label class="sleek-bold" for="phone">Phone:</label>' );
+		push ( @out,  $q->textfield(
+			-name => 'phone',
+			-id => 'phone',
+			-class => 'sleek',
+			-maxlength => 16,
+		) );
+		push ( @out,  $q->br );
+		push ( @out,  '<label class="sleek" for="fax">Fax:</label>' );
+		push ( @out,  $q->textfield(
+			-name => 'fax',
+			-id => 'fax',
+			-class => 'sleek',
+			-maxlength => 16,
+		) );
+		push ( @out,  $q->br );
+		push ( @out,  '<label class="sleek-bold" for="address">Street Address:</label>' );
+		push ( @out,  $q->textfield(
+			-name => 'address',
+			-id => 'address',
+			-class => 'sleek',
+			-maxlength => 48,
+		) );
+		push ( @out,  $q->br );
+		push ( @out,  '<label class="sleek" for="address2">Address Line 2:</label>' );
+		push ( @out,  $q->textfield(
+			-name => 'address2',
+			-id => 'address2',
+			-class => 'sleek',
+			-maxlength => 48,
+		) );
+		push ( @out,  $q->br );
+		push ( @out,  '<label class="sleek-bold" for="zip">Zipcode:</label>' );
+		push ( @out,  $q->textfield(
+			-name => 'zip',
+			-id => 'zip',
+			-class => 'sleek-small',
+			-maxlength => 5,
+		) );
+		push ( @out,  $q->br );
+		push ( @out,  $q->hr({ -class => 'mini' }) );
+		push ( @out,  $q->start_div({ -class => 'sleek-button' }) );
+		push ( @out,  $q->submit({
+			-class => 'sleek-button',
+			-value => 'Add!',
+			-id => 'submit',
+			-name => 'submit',
+		}) );
+		push ( @out,  $q->end_div );
+		push ( @out,  $q->end_form );
+	}
+	push ( @out,  $q->br );
+	push ( @out,  $q->hr({ -class => 'mini' }) );
+	push ( @out,  $q->br );
+
+	return \@out;
+}
+
+sub display_stub_sub {
+	my ( $self, $dbh, $q, $vars ) = @_;
+	my @out;
+	return \@out;
+}
+
+sub commie {
+	local $_ = shift;
+	1 while s/^([-+]?\d+)(\d{3})/$1,$2/;
+	return $_;
 }
 
 #

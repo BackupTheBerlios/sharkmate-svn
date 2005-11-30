@@ -15,6 +15,7 @@ use Auth::Sticky;
 
 ## Currently moving everything out of contacts.pl, wo.pl, accounts.pl into
 ## their respective section's module to clean up quite a bit.
+##	contacts.pl => done
 
 ## Authentication should probably happen here too via Auth::Sticky
 
