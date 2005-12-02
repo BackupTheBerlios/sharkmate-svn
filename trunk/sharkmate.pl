@@ -2,7 +2,7 @@
 
 use warnings;
 use strict;
-use Common;
+use Sharkmate::Common;
 use WWW::CMS;
 use Auth::Sticky;
 
@@ -21,7 +21,7 @@ sub main {
 	my @out;
 
 	$self->{_release} = '0.0.0';
-	$self->{_common} = Common->new();
+	$self->{_common} = Sharkmate::Common->new();
 	$self->{_cms} = WWW::CMS->new({
 		TemplateBase	=>	$self->{_common}->{conf}->{TemplateBase},
 		Module		=>	$self->{_common}->{conf}->{Module}
@@ -29,9 +29,9 @@ sub main {
 
 	# Autoload these function handlers
 	my @autoload = (
-		'Contacts',
-		'Accounts',
-		'WorkOrders',
+		'Sharkmate::Contacts',
+		'Sharkmate::Accounts',
+		'Sharkmate::WorkOrders',
 	);
 
 	foreach my $namespace ( @autoload ) {
@@ -42,12 +42,23 @@ sub main {
 		require $file; 
 		$self->{plugins}->{$namespace} = $namespace->new();
 
-		# Kudos to sili for this simple hash copy
-		$self->{dispatch}->{$_} = $self->{plugins}->{$namespace}->{dispatch}->{$_} for keys %{ $self->{plugins}->{$namespace}->{dispatch} };
+		for keys( %{ $self->{plugins}->{$namespace}->{dispatch} } ) {
+			( $self->{dispatch}->{$_}->{obj}, $self->{dispatch}->{$_}->{method} ) = ( $namespace, $self->{plugins}->{$namespace}->{dispatch}->{$_} );
+		}
+
+		print STDERR "Loaded plugin: '$file'\n";
 	}
 
 	if ( $self->{_common}->{vars}->{act} ) {
 		# 'act' was passed in, see if we have a handler for it
+
+		print STDERR "ACT: '$self->{_common}->{vars}->{act}'\n";
+		use Data::Dumper;
+		print STDERR "From sm.pl: HAVE QUERY!\n" if $self->{_common}->{query};
+		print STDERR "From sm.pl: HAVE DBH!\n" if $self->{_common}->{dbh};
+
+		print STDERR "DBH: " . Dumper( $self->{_common}->{dbh} );
+
 		if ( $self->{dispatch}->{ $self->{_common}->{vars}->{act} } ) {
 			# Indeed we do, run it and pass it the three standard variables (DBI ref, CGI ref, hashref of CGI variables)
 			my $out = $self->{dispatch}->{ $self->{_common}->{vars}->{act} }->( $self->{_common}->{dbh}, $self->{_common}->{query}, $self->{_common}->{vars} ) or do {
