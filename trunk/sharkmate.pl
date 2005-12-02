@@ -60,7 +60,7 @@ sub main {
 			my $vars = $self->{_common}->{vars};
 			my $obj = $self->{dispatch}->{ $self->{_common}->{vars}->{act} }->{obj};
 			my $method = $self->{dispatch}->{ $self->{_common}->{vars}->{act} }->{method};
-			my $out = $obj->$method->( $self->{dispatch}->{ $dbh, $q, $vars ) or do {
+			my $out = $obj->$method( $dbh, $q, $vars ) or do {
 				print STDERR "Error dispatching '$self->{_common}->{vars}->{act}'\n";
 				push ( @{ $self->{_cms}->{content} }, "<h1 style='color:red'>Fatal Error</h1><hr />A fatal error has occured, please contact your system administrator." );
 			};
