@@ -42,8 +42,9 @@ sub main {
 		require $file; 
 		$self->{plugins}->{$namespace} = $namespace->new();
 
-		for keys( %{ $self->{plugins}->{$namespace}->{dispatch} } ) {
-			( $self->{dispatch}->{$_}->{obj}, $self->{dispatch}->{$_}->{method} ) = ( $namespace, $self->{plugins}->{$namespace}->{dispatch}->{$_} );
+		for ( keys %{ $self->{plugins}->{$namespace}->{dispatch} } ) {
+			$self->{dispatch}->{$_}->{obj} = $self->{plugins}->{$namespace};
+			$self->{dispatch}->{$_}->{method} = $self->{plugins}->{$namespace}->{dispatch}->{$_};
 		}
 
 		print STDERR "Loaded plugin: '$file'\n";
@@ -52,16 +53,14 @@ sub main {
 	if ( $self->{_common}->{vars}->{act} ) {
 		# 'act' was passed in, see if we have a handler for it
 
-		print STDERR "ACT: '$self->{_common}->{vars}->{act}'\n";
-		use Data::Dumper;
-		print STDERR "From sm.pl: HAVE QUERY!\n" if $self->{_common}->{query};
-		print STDERR "From sm.pl: HAVE DBH!\n" if $self->{_common}->{dbh};
-
-		print STDERR "DBH: " . Dumper( $self->{_common}->{dbh} );
-
 		if ( $self->{dispatch}->{ $self->{_common}->{vars}->{act} } ) {
 			# Indeed we do, run it and pass it the three standard variables (DBI ref, CGI ref, hashref of CGI variables)
-			my $out = $self->{dispatch}->{ $self->{_common}->{vars}->{act} }->( $self->{_common}->{dbh}, $self->{_common}->{query}, $self->{_common}->{vars} ) or do {
+			my $dbh = $self->{_common}->{dbh};
+			my $q = $self->{_common}->{query};
+			my $vars = $self->{_common}->{vars};
+			my $obj = $self->{dispatch}->{ $self->{_common}->{vars}->{act} }->{obj};
+			my $method = $self->{dispatch}->{ $self->{_common}->{vars}->{act} }->{method};
+			my $out = $obj->$method->( $self->{dispatch}->{ $dbh, $q, $vars ) or do {
 				print STDERR "Error dispatching '$self->{_common}->{vars}->{act}'\n";
 				push ( @{ $self->{_cms}->{content} }, "<h1 style='color:red'>Fatal Error</h1><hr />A fatal error has occured, please contact your system administrator." );
 			};
