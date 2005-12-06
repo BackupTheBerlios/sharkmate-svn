@@ -50,18 +50,20 @@ sub main {
 		print STDERR "Loaded plugin: '$file'\n";
 	}
 
-	if ( $self->{_common}->{vars}->{act} ) {
+	if ( my $action = $self->{_common}->{vars}->{act} ) {
 		# 'act' was passed in, see if we have a handler for it
 
-		if ( $self->{dispatch}->{ $self->{_common}->{vars}->{act} } ) {
+		if ( $self->{dispatch}->{ $action } ) {
 			# Indeed we do, run it and pass it the three standard variables (DBI ref, CGI ref, hashref of CGI variables)
-			my $dbh = $self->{_common}->{dbh};
-			my $q = $self->{_common}->{query};
-			my $vars = $self->{_common}->{vars};
-			my $obj = $self->{dispatch}->{ $self->{_common}->{vars}->{act} }->{obj};
-			my $method = $self->{dispatch}->{ $self->{_common}->{vars}->{act} }->{method};
+			my $dbh    = $self->{_common}->{dbh};
+			my $q      = $self->{_common}->{query};
+			my $vars   = $self->{_common}->{vars};
+
+			my $obj    = $self->{dispatch}->{ $action }->{obj};
+			my $method = $self->{dispatch}->{ $action }->{method};
+
 			my $out = $obj->$method( $dbh, $q, $vars ) or do {
-				print STDERR "Error dispatching '$self->{_common}->{vars}->{act}'\n";
+				print STDERR "Error dispatching '$action'\n";
 				push ( @{ $self->{_cms}->{content} }, "<h1 style='color:red'>Fatal Error</h1><hr />A fatal error has occured, please contact your system administrator." );
 			};
 
