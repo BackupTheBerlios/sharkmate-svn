@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 
-package WorkOrders;
+package Sharkmate::WorkOrders;
 
 use warnings;
 use strict;
-use Common;
-use Contacts;
+use Sharkmate::Common;
+use Sharkmate::Contacts;
 
 my $contact = Contacts->new;
 

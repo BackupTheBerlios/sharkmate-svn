@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Contacts;
+package Sharkmate::Contacts;
 
 use warnings;
 use strict;

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Common;
+package Sharkmate::Common;
 
 use warnings;
 use strict;

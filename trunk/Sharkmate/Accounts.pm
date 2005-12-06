@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 
-package Accounts;
+package Sharkmate::Accounts;
 
 use warnings;
 use strict;
-use Common;
+use Sharkmate::Common;
 
 sub new {
 	my $class = shift;
