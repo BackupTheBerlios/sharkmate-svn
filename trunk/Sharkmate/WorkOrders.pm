@@ -4,7 +4,6 @@ package Sharkmate::WorkOrders;
 
 use warnings;
 use strict;
-use Sharkmate::Common;
 use Sharkmate::Contacts;
 
 my $contact = Contacts->new;

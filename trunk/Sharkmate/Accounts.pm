@@ -4,7 +4,6 @@ package Sharkmate::Accounts;
 
 use warnings;
 use strict;
-use Sharkmate::Common;
 
 sub new {
 	my $class = shift;
