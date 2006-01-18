@@ -12,19 +12,19 @@ sub new {
 	bless $self, $class;
 
 	$self->{dispatch} = {
-		'0000'		=>	\&Contacts::display_all_contacts,
-		'0001'		=>	\&Contacts::display_find_contacts,
-		'0010'		=>	\&Contacts::display_add_contact,
-		'0011'		=>	\&Contacts::display_edit_contact,
-		'0100'		=>	\&Contacts::display_contact_notes,
-		'0101'		=>	\&Contacts::display_delete_contact,
-		'0110'		=>	\&Contacts::display_insert_contact_note,
-		'0111'		=>	\&Contacts::display_delete_contact_note,
-		'1000'		=>	\&Contacts::display_all_companies,
-		'00010000'	=>	\&Contacts::display_delete_company,
-		'00010001'	=>	\&Contacts::display_edit_company,
-		'1001'		=>	\&Contacts::display_find_company,
-		'1010'		=>	\&Contacts::display_add_company,
+		'0000'		=>	\&Sharkmate::Contacts::display_all_contacts,
+		'0001'		=>	\&Sharkmate::Contacts::display_find_contacts,
+		'0010'		=>	\&Sharkmate::Contacts::display_add_contact,
+		'0011'		=>	\&Sharkmate::Contacts::display_edit_contact,
+		'0100'		=>	\&Sharkmate::Contacts::display_contact_notes,
+		'0101'		=>	\&Sharkmate::Contacts::display_delete_contact,
+		'0110'		=>	\&Sharkmate::Contacts::display_insert_contact_note,
+		'0111'		=>	\&Sharkmate::Contacts::display_delete_contact_note,
+		'1000'		=>	\&Sharkmate::Contacts::display_all_companies,
+		'00010000'	=>	\&Sharkmate::Contacts::display_delete_company,
+		'00010001'	=>	\&Sharkmate::Contacts::display_edit_company,
+		'1001'		=>	\&Sharkmate::Contacts::display_find_company,
+		'1010'		=>	\&Sharkmate::Contacts::display_add_company,
 	};
 
 	return $self;
